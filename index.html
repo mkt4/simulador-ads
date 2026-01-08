@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Simulador Google Ads (Treinamento)</title>
+    <style>
+        :root {
+            --bg: #0b0f17;
+            --panel: #111827;
+            --panel2: #0f172a;
+            --text: #e5e7eb;
+            --muted: #9ca3af;
+            --line: #1f2937;
+            --accent: #7c3aed;
+            --danger: #ef4444;
+            --ok: #22c55e;
+            --serp-bg: #ffffff;
+            --serp-text: #1f2937;
+            --serp-muted: #6b7280;
+            --serp-link: #1a0dab;
+            --serp-url: #006621;
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helvetica Neue", sans-serif;
+            background: radial-gradient(1200px 600px at 30% -10%, rgba(124, 58, 237, .25), transparent 60%),
+                radial-gradient(1000px 600px at 80% 0%, rgba(34, 197, 94, .15), transparent 55%),
+                var(--bg);
+            color: var(--text);
+        }
+
+        header {
+            padding: 20px 20px 0;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: .2px;
+        }
+
+        header p {
+            margin: 6px 0 0;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .wrap {
+            max-width: 1200px;
+            margin: 16px auto 28px;
+            padding: 0 20px;
+            display: flex;
+            gap: 14px;
+            align-items: stretch;
+        }
+
+        .panel {
+            background: linear-gradient(180deg, rgba(255, 255, 255, .03), rgba(255, 255, 255, .01));
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            overflow: hidden;
+            flex: 1;
+            min-height: 620px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, .35);
+        }
+
+        .panel .bar {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--line);
+            background: rgba(17, 24, 39, .6);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .panel .bar .title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .panel .content {
+            padding: 14px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            color: var(--muted);
+            margin: 0 0 6px;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            background: rgba(15, 23, 42, .7);
+            border: 1px solid var(--line);
+            color: var(--text);
+            border-radius: 10px;
+            padding: 10px 10px;
+            outline: none;
+            font-size: 13px;
+        }
+
+        textarea {
+            min-height: 98px;
+            resize: vertical;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            border-color: rgba(124, 58, 237, .55);
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, .18);
+        }
+
+        .help {
+            margin-top: 6px;
+            font-size: 11px;
+            color: var(--muted);
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .pill {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            color: var(--muted);
+            white-space: nowrap;
+        }
+
+        .pill.ok {
+            border-color: rgba(34, 197, 94, .35);
+            color: rgba(34, 197, 94, .9);
+        }
+
+        .pill.bad {
+            border-color: rgba(239, 68, 68, .4);
+            color: rgba(239, 68, 68, .95);
+        }
+
+        .row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .row>* {
+            flex: 1;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .panel-footer {
+            padding: 12px 14px;
+            border-top: 1px solid var(--line);
+            background: rgba(17, 24, 39, .06);
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        button {
+            border: none;
+            cursor: pointer;
+            border-radius: 12px;
+            padding: 10px 12px;
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(180deg, rgba(124, 58, 237, 1), rgba(99, 102, 241, 1));
+            color: #fff;
+            box-shadow: 0 10px 24px rgba(124, 58, 237, .25);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--line);
+        }
+
+        .btn-primary:active {
+            transform: translateY(1px);
+        }
+
+        .toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .toggle input {
+            width: auto;
+        }
+
+        /* SERP Preview */
+        .serp-wrap {
+            background: var(--serp-bg);
+            color: var(--serp-text);
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            padding: 14px 14px 12px;
+            max-width: 620px;
+        }
+
+        .serp-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 8px;
+            color: var(--serp-muted);
+            font-size: 12px;
+        }
+
+        .ad-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--serp-muted);
+        }
+
+        .badge {
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            color: #374151;
+            border-radius: 6px;
+            padding: 1px 6px;
+            font-weight: 700;
+            font-size: 11px;
+        }
+
+        .serp-url {
+            color: var(--serp-url);
+            font-size: 13px;
+            margin-bottom: 4px;
+            word-break: break-word;
+        }
+
+        .serp-title {
+            color: var(--serp-link);
+            font-size: 18px;
+            line-height: 1.25;
+            font-weight: 500;
+            margin: 2px 0 6px;
+        }
+
+        .serp-desc {
+            color: #374151;
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        .serp-sitelinks {
+            margin-top: 10px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px 14px;
+            font-size: 13px;
+        }
+
+        .serp-sitelinks a {
+            color: var(--serp-link);
+            text-decoration: none;
+        }
+
+        .kw {
+            background: rgba(255, 235, 59, .35);
+            border-radius: 4px;
+            padding: 0 2px;
+        }
+
+        .note {
+            margin-top: 12px;
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.45;
+        }
+
+        .mini {
+            font-size: 11px;
+            color: var(--muted);
+        }
+
+        @media (max-width: 980px) {
+            .wrap {
+                flex-direction: column;
+            }
+
+            .serp-wrap {
+                max-width: 100%;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Simulador simples de Google Ads (RSA) — Treinamento</h1>
+        <p>Preencha os ativos do anúncio na esquerda e clique em <b>rodar campanha</b>. O preview gera uma combinação (3
+            títulos + 2 descrições) como um RSA.</p>
+    </header>
+
+    <main class="wrap">
+        <!-- LEFT: INPUTS -->
+        <section class="panel" aria-label="Dados do anúncio">
+            <div class="bar">
+                <div class="title">1) ativos do anúncio</div>
+            </div>
+
+            <div class="content">
+                <div class="grid">
+                    <div>
+                        <label for="brand">Nome da marca (opcional)</label>
+                        <input id="brand" placeholder="Ex.: Clínica Horizonte" />
+                        <div class="help">
+                            <span class="mini">Usado só pra treinamento, não é do Google.</span>
+                            <span class="pill" id="p-brand">livre</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="finalUrl">URL final (landing page)</label>
+                        <input id="finalUrl" placeholder="https://seusite.com.br/servico" />
+                        <div class="help">
+                            <span class="mini">Apenas exibida como referência.</span>
+                            <span class="pill" id="p-url">recomendado</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="displayDomain">Domínio exibido</label>
+                        <input id="displayDomain" placeholder="seusite.com.br" />
+                        <div class="help">
+                            <span class="mini">Ex.: seusite.com.br</span>
+                            <span class="pill ok" id="p-domain">ok</span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div>
+                            <label for="path1">Path 1 (até 15)</label>
+                            <input id="path1" placeholder="ex.: consulta" />
+                            <div class="help">
+                                <span class="mini">Máx. 15 caracteres</span>
+                                <span class="pill" id="p-path1">0/15</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="path2">Path 2 (até 15)</label>
+                            <input id="path2" placeholder="ex.: sao-paulo" />
+                            <div class="help">
+                                <span class="mini">Máx. 15 caracteres</span>
+                                <span class="pill" id="p-path2">0/15</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="headlines">Títulos (1 por linha — até 30 cada)</label>
+                        <textarea id="headlines"
+                            placeholder="Ex.:&#10;Consulta rápida em SP&#10;Agende online hoje&#10;Atendimento humanizado"></textarea>
+                        <div class="help">
+                            <span class="mini">Sugestão: 8–15 títulos para treinar combinações</span>
+                            <span class="pill" id="p-hl">0 linhas</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="descriptions">Descrições (1 por linha — até 90 cada)</label>
+                        <textarea id="descriptions"
+                            placeholder="Ex.:&#10;Agende em minutos. Horários flexíveis e equipe especializada.&#10;Condições facilitadas. Veja opções e tire dúvidas no WhatsApp."></textarea>
+                        <div class="help">
+                            <span class="mini">Sugestão: 3–6 descrições</span>
+                            <span class="pill" id="p-desc">0 linhas</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="keywords">Palavras-chave (1 por linha)</label>
+                        <textarea id="keywords"
+                            placeholder="Ex.:&#10;consulta em são paulo&#10;clínica perto de mim&#10;agendar consulta online"></textarea>
+                        <div class="help">
+                            <span class="mini">Usadas para destaque no preview (treinamento)</span>
+                            <span class="pill" id="p-kw">0 linhas</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="sitelinks">Sitelinks (opcional — 1 por linha no formato: Texto | URL)</label>
+                        <textarea id="sitelinks"
+                            placeholder="Ex.:&#10;Preços | https://seusite.com.br/precos&#10;Localização | https://seusite.com.br/localizacao"></textarea>
+                        <div class="help">
+                            <span class="mini">Treinamento visual (não é 100% fiel)</span>
+                            <span class="pill" id="p-sl">0 linhas</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    style="margin-top:12px; display:flex; justify-content:space-between; gap:10px; align-items:center;">
+                    <div class="toggle">
+                        <input type="checkbox" id="toggleHighlight" checked />
+                        <label for="toggleHighlight" style="margin:0; color:var(--muted);">destacar palavras-chave no
+                            preview</label>
+                    </div>
+
+                    <div class="toggle">
+                        <input type="checkbox" id="toggleLive" />
+                        <label for="toggleLive" style="margin:0; color:var(--muted);">preview ao digitar (live)</label>
+                    </div>
+                </div>
+
+                <div class="note">
+                    <b>Como usar em treinamento:</b> faça o aluno inserir 10 títulos e 4 descrições.
+                    Cada clique em “Publicar teste” cria um “anúncio” diferente. Depois compare clareza, promessa,
+                    especificidade e aderência às keywords.
+                </div>
+            </div>
+
+            <div class="panel-footer">
+                <button class="btn-ghost" id="btnFill">preencher exemplo</button>
+                <button class="btn-primary" id="btnRun">Publicar teste</button>
+            </div>
+        </section>
+
+        <!-- RIGHT: PREVIEW -->
+        <section class="panel" aria-label="Preview do anúncio">
+            <div class="bar">
+                <div class="title">2) preview tipo SERP</div>
+                <div class="mini" id="status">pronto</div>
+            </div>
+
+            <div class="content">
+                <div class="serp-wrap" id="serp">
+                    <div class="serp-top">
+                        <div class="ad-badge">
+                            <span class="badge">Patrocinado</span>
+                            <span id="serp-brand">Anunciante</span>
+                        </div>
+                        <div class="mini" id="serp-device">desktop</div>
+                    </div>
+
+                    <div class="serp-url" id="serp-url">seusite.com.br/consulta/sao-paulo</div>
+                    <div class="serp-title" id="serp-title">Seus Títulos Aparecem Aqui | Como no Google</div>
+                    <div class="serp-desc" id="serp-desc">
+                        Suas descrições aparecem aqui. Clique em “” para combinar títulos e descrições.
+                    </div>
+
+                    <div class="serp-sitelinks" id="serp-sitelinks" style="display:none;"></div>
+                </div>
+
+                <div class="note" style="margin-top:14px;">
+                    <b>Observação:</b> o Google varia formatos, extensões e quebras de linha.
+                    Aqui é um simulador didático pra treinar estrutura e mensagem — não um espelho perfeito.
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Limites típicos (RSA)
+        const LIMITS = {
+            headline: 30,
+            description: 90,
+            path: 15,
+        };
+
+        // Helpers
+        const $ = (id) => document.getElementById(id);
+
+        function linesOf(text) {
+            return (text || "")
+                .split(/\r?\n/)
+                .map(s => s.trim())
+                .filter(Boolean);
+        }
+
+        function pickRandom(arr, n) {
+            const a = [...arr];
+            // Fisher-Yates shuffle
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a.slice(0, Math.min(n, a.length));
+        }
+
+        function clipByChars(str, max) {
+            if (!str) return "";
+            if (str.length <= max) return str;
+            return str.slice(0, max - 1) + "…";
+        }
+
+        function sanitize(str) {
+            return (str || "").replace(/[<>]/g, "");
+        }
+
+        function buildDisplayUrl(domain, p1, p2) {
+            const safeDomain = sanitize(domain || "seusite.com.br").replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+            const path1 = sanitize(p1 || "").replace(/\s+/g, "-");
+            const path2 = sanitize(p2 || "").replace(/\s+/g, "-");
+            let url = safeDomain;
+            if (path1) url += "/" + path1;
+            if (path2) url += "/" + path2;
+            return url;
+        }
+
+        function markPill(pillEl, current, max) {
+            pillEl.textContent = `${current}/${max}`;
+            pillEl.classList.remove("ok", "bad");
+            if (current === 0) return;
+            if (current <= max) pillEl.classList.add("ok");
+            else pillEl.classList.add("bad");
+        }
+
+        function validateAssets(headlines, descriptions) {
+            const warnings = [];
+
+            if (headlines.length < 3) warnings.push("Adicione pelo menos 3 títulos (um por linha).");
+            if (descriptions.length < 2) warnings.push("Adicione pelo menos 2 descrições (uma por linha).");
+
+            const longHL = headlines.filter(h => h.length > LIMITS.headline);
+            if (longHL.length) warnings.push(`Há ${longHL.length} título(s) acima de ${LIMITS.headline} caracteres.`);
+
+            const longDesc = descriptions.filter(d => d.length > LIMITS.description);
+            if (longDesc.length) warnings.push(`Há ${longDesc.length} descrição(ões) acima de ${LIMITS.description} caracteres.`);
+
+            return warnings;
+        }
+
+        function highlightKeywords(text, keywords) {
+            const doHighlight = $("toggleHighlight").checked;
+            if (!doHighlight || !keywords.length) return text;
+
+            // Ordena por tamanho pra evitar que "spa" marque dentro de "sao paulo"
+            const sorted = [...keywords].sort((a, b) => b.length - a.length);
+            let out = text;
+
+            // Escape regex
+            const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+            sorted.forEach(k => {
+                const kw = k.trim();
+                if (kw.length < 3) return;
+                const re = new RegExp(`\\b(${esc(kw)})\\b`, "gi");
+                out = out.replace(re, `<span class="kw">$1</span>`);
+            });
+
+            return out;
+        }
+
+        function renderSitelinks(lines) {
+            const box = $("serp-sitelinks");
+            box.innerHTML = "";
+            const items = lines
+                .map(l => l.split("|").map(x => x.trim()))
+                .filter(parts => parts.length >= 1 && parts[0]);
+
+            if (!items.length) {
+                box.style.display = "none";
+                return;
+            }
+
+            // Mostra até 4 (2 colunas)
+            items.slice(0, 4).forEach(([text, url]) => {
+                const a = document.createElement("a");
+                a.href = url || "#";
+                a.target = "_blank";
+                a.rel = "noopener";
+                a.textContent = text;
+                box.appendChild(a);
+            });
+
+            box.style.display = "grid";
+        }
+
+        function runCampaign() {
+            const brand = sanitize($("brand").value) || "Anunciante";
+            const finalUrl = sanitize($("finalUrl").value);
+            const domain = sanitize($("displayDomain").value) || (finalUrl ? finalUrl : "seusite.com.br");
+            const p1 = sanitize($("path1").value);
+            const p2 = sanitize($("path2").value);
+
+            const headlinesRaw = linesOf($("headlines").value);
+            const descriptionsRaw = linesOf($("descriptions").value);
+            const keywords = linesOf($("keywords").value).map(s => s.toLowerCase());
+            const sitelinks = linesOf($("sitelinks").value);
+
+            // Validação
+            const warnings = validateAssets(headlinesRaw, descriptionsRaw);
+
+            // Seleciona ativos (como RSA)
+            const chosenHL = pickRandom(headlinesRaw, 3).map(h => clipByChars(h, LIMITS.headline));
+            const chosenDesc = pickRandom(descriptionsRaw, 2).map(d => clipByChars(d, LIMITS.description));
+
+            // Monta preview
+            $("serp-brand").textContent = brand;
+
+            const displayUrl = buildDisplayUrl(domain, clipByChars(p1, LIMITS.path), clipByChars(p2, LIMITS.path));
+            $("serp-url").textContent = displayUrl;
+
+            const title = chosenHL.length ? chosenHL.join(" | ") : "Seus títulos aparecem aqui";
+            $("serp-title").textContent = title;
+
+            const descText = chosenDesc.length ? chosenDesc.join(" ") : "Suas descrições aparecem aqui.";
+            $("serp-desc").innerHTML = highlightKeywords(sanitize(descText), keywords);
+
+            renderSitelinks(sitelinks);
+
+            // Status
+            if (warnings.length) {
+                $("status").textContent = "atenção: " + warnings[0];
+                $("status").style.color = "rgba(239,68,68,.95)";
+            } else {
+                $("status").textContent = "campanha rodada: variação gerada";
+                $("status").style.color = "rgba(34,197,94,.9)";
+            }
+        }
+
+        function updateCounters() {
+            // Path counters
+            markPill($("p-path1"), ($("path1").value || "").length, LIMITS.path);
+            markPill($("p-path2"), ($("path2").value || "").length, LIMITS.path);
+
+            // Lines counters
+            $("p-hl").textContent = `${linesOf($("headlines").value).length} linhas`;
+            $("p-desc").textContent = `${linesOf($("descriptions").value).length} linhas`;
+            $("p-kw").textContent = `${linesOf($("keywords").value).length} linhas`;
+            $("p-sl").textContent = `${linesOf($("sitelinks").value).length} linhas`;
+        }
+
+        function fillExample() {
+            $("brand").value = "MKT4 Hosting";
+            $("finalUrl").value = "https://mkt4hosting.com.br/wordpress";
+            $("displayDomain").value = "mkt4hosting.com.br";
+            $("path1").value = "wordpress";
+            $("path2").value = "elementor";
+
+            $("headlines").value = [
+                "Hospedagem WordPress rápida",
+                "Site com Elementor Pro",
+                "Suporte técnico de verdade",
+                "Melhore seu LCP e SEO",
+                "Plano mensal sem dor de cabeça",
+                "Ative em poucos minutos",
+                "Infra completa para agências",
+                "Mais performance no seu site",
+                "Migração assistida",
+                "Ambiente otimizado para WP"
+            ].join("\n");
+
+            $("descriptions").value = [
+                "Hospedagem otimizada para WordPress com performance e segurança. Ideal para sites e landing pages.",
+                "Suporte humano e time técnico. Migração assistida e configuração do ambiente sem complicação.",
+                "Planos flexíveis para agências. Menos tempo apagando incêndio e mais foco em resultado."
+            ].join("\n");
+
+            $("keywords").value = [
+                "hospedagem wordpress",
+                "elementor pro",
+                "site rápido",
+                "melhorar seo",
+                "landing page wordpress"
+            ].join("\n");
+
+            $("sitelinks").value = [
+                "Planos | https://mkt4hosting.com.br/planos",
+                "Suporte | https://mkt4hosting.com.br/suporte",
+                "Migração | https://mkt4hosting.com.br/migracao",
+                "Contato | https://mkt4hosting.com.br/contato"
+            ].join("\n");
+
+            updateCounters();
+            runCampaign();
+        }
+
+        // Live preview toggle
+        function bindLive() {
+            const inputs = ["brand", "finalUrl", "displayDomain", "path1", "path2", "headlines", "descriptions", "keywords", "sitelinks", "toggleHighlight"];
+            inputs.forEach(id => {
+                $(id).addEventListener("input", () => {
+                    updateCounters();
+                    if ($("toggleLive").checked) runCampaign();
+                });
+            });
+
+            $("toggleLive").addEventListener("change", () => {
+                if ($("toggleLive").checked) runCampaign();
+            });
+        }
+
+        // Init
+        $("btnRun").addEventListener("click", () => { updateCounters(); runCampaign(); });
+        $("btnFill").addEventListener("click", fillExample);
+
+        updateCounters();
+        bindLive();
+    </script>
+</body>
+
+</html>
